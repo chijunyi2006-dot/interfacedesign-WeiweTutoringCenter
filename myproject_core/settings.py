@@ -59,7 +59,7 @@ ROOT_URLCONF = 'myproject_core.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR.parent / 'for backend' / 'for backend' / 'templates'],  # 補上一層 for backend
+        'DIRS': [BASE_DIR / 'templates'],  
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -121,10 +121,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
-    BASE_DIR.parent / 'for backend' / 'for backend' / 'static',  # 指向上層的 for backend/static
+    BASE_DIR / 'static',
 ]
 
 
