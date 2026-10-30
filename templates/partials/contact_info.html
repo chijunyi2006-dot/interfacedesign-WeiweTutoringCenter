@@ -1,0 +1,10 @@
+<!--
+  補習班聯絡資訊（頁尾與聯絡我們頁共用，改這一個檔案即可）
+  地址、電話、營業時間依 Google 地圖「斗六偉文」「虎尾偉文」；LINE ID 為示意。
+-->
+<ul class="info-list">
+  <li>{% include "partials/icon.html" with name="building" %}<span><b>雲科據點（斗六偉文）</b>雲林縣斗六市平等街 47 號 2 樓<br><a href="tel:+88655361860">05-536-1860</a></span></li>
+  <li>{% include "partials/icon.html" with name="building" %}<span><b>虎科據點（虎尾偉文）</b>雲林縣虎尾鎮中正路 396 號<br><a href="tel:+88657701688">05-770-1688</a></span></li>
+  <li>{% include "partials/icon.html" with name="chat" %}<span><b>LINE</b><a href="{% url 'contact' %}#lineDialog">@yunlinwaywun</a></span></li>
+  <li>{% include "partials/icon.html" with name="clock" %}<span><b>營業時間</b>10:00–21:30</span></li>
+</ul>

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}榜單榮譽{% endblock %}
+
+{% block content %}
+<div class="container page">
+  <nav class="breadcrumb" aria-label="麵包屑">
+    <a href="{% url 'home' %}">{% include "partials/icon.html" with name="home" %}首頁</a>{% include "partials/icon.html" with name="chevron-right" cls="icon-sm sep" %}<span>榜單榮譽</span>
+  </nav>
+  <h1 class="page-title">榜單榮譽</h1>
+
+  <div class="filter-scope" data-filter-scope>
+    <!-- 統計卡片：數字會隨篩選結果即時更新 -->
+    <div class="stat-row">
+      <div class="stat-card"><span>符合條件錄取人次</span><b data-filter-count>{{ rankings|length }}</b></div>
+      <div class="stat-card"><span>其中榜首 / 前三名</span><b data-filter-count-honor>0</b></div>
+      <div class="stat-card"><span>涵蓋學校數</span><b data-filter-count-unique="school">0</b></div>
+    </div>
+
+    <form class="filters" role="search" onsubmit="return false">
+      <label class="filter-label" for="rankKeyword">{% include "partials/icon.html" with name="search" %}查詢</label>
+      <input id="rankKeyword" type="search" placeholder="輸入學校、系所或姓名" data-filter-keyword>
+      <select data-filter="year" aria-label="選擇年度">
+        <option value="">全部年度</option>
+        {% for y in years %}<option value="{{ y }}">{{ y }} 年度</option>{% endfor %}
+      </select>
+      <select data-filter="category" aria-label="選擇類別">
+        <option value="">全部類別</option>
+        {% for c in categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+      </select>
+      <button class="btn btn-outline btn-sm" type="button" data-filter-reset>清除條件</button>
+    </form>
+
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr><th>年度</th><th>學員</th><th>錄取學校</th><th>系所</th><th>類別</th><th>榮譽</th></tr>
+        </thead>
+        <tbody>
+          {% for r in rankings %}
+            <tr class="filter-item"
+                data-year="{{ r.year }}"
+                data-category="{{ r.category }}"
+                data-school="{{ r.school }}"
+                {% if r.is_top %}data-honor="1"{% endif %}>
+              <td data-label="年度">{{ r.year }}</td>
+              <td data-label="學員">{{ r.student_name }}</td>
+              <td data-label="錄取學校">{{ r.school }}</td>
+              <td data-label="系所">{{ r.department }}</td>
+              <td data-label="類別">{{ r.category }}</td>
+              <td data-label="榮譽"><span class="honor{% if r.is_top %} honor-top{% endif %}">{{ r.honor }}</span></td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="6" class="empty">目前尚無榜單資料。</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <p class="empty" data-filter-empty hidden>找不到符合條件的榜單資料。</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

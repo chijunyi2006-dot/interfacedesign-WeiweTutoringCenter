@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}雲端學習中心{% endblock %}
+
+{% block content %}
+<!-- 雲端學習中心：僅限登入會員（後端 view 需加 @login_required）；與全站同網址、同風格（作業一 Bad UI 問題 1） -->
+<div class="container page">
+  <h1 class="page-title">雲端學習中心</h1>
+  <section class="member-head">
+    <p class="welcome">{% include "partials/icon.html" with name="user" %}歡迎回來，{{ user.first_name|default:user.username }}</p>
+    {% for e in enrollments|slice:":1" %}
+      <p class="current-course">{% include "partials/icon.html" with name="cap" %}當前選購課程：{{ e.course.category }} - {{ e.course.title }}（{{ e.plan_name }}）</p>
+    {% empty %}
+      <p class="current-course muted">目前尚未選購課程。<a href="{% url 'course_list' %}">瀏覽課程方案{% include "partials/icon.html" with name="arrow-right" %}</a></p>
+    {% endfor %}
+  </section>
+
+  {% for e in enrollments %}
+    <section class="member-block">
+      <h2 class="bar-title">{% include "partials/icon.html" with name="play" %}繼續觀看｜{{ e.course.title }}</h2>
+      {% if e.last_unit and e.last_unit.video_url %}
+        <div class="video-frame">
+          <iframe src="{{ e.last_unit.video_url }}" title="{{ e.last_unit.title }}" loading="lazy" allowfullscreen></iframe>
+        </div>
+      {% else %}
+        <div class="video-frame video-placeholder">課程影片準備中</div>
+      {% endif %}
+      <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ e.progress }}">
+        <span style="width: {{ e.progress }}%"></span>
+      </div>
+      <p class="muted small">學習進度 {{ e.progress }}%{% if e.last_unit %}｜上次觀看：{{ e.last_unit.title }}{% endif %}</p>
+
+      <div class="box">
+        <h3 class="bar-title bar-sm bar-dark">{% include "partials/icon.html" with name="layers" %}課程單元與下載區</h3>
+        <ul class="unit-list">
+          {% for unit in e.course.units.all %}
+            <li>
+              <span>{% include "partials/icon.html" with name="book" %}第{{ unit.order }}章：{{ unit.title }}{% if unit == e.last_unit %} <em>(進行中)</em>{% endif %}</span>
+              <span class="unit-actions">
+                {% if unit.video_url %}<a class="btn btn-xs btn-outline" href="{{ unit.video_url }}" target="_blank" rel="noopener">{% include "partials/icon.html" with name="play" %}播放</a>{% endif %}
+                {% if unit.handout_url %}<a class="btn btn-xs btn-gray" href="{{ unit.handout_url }}" target="_blank" rel="noopener">{% include "partials/icon.html" with name="download" %}講義</a>{% endif %}
+              </span>
+            </li>
+          {% empty %}
+            <li class="empty">單元建置中。</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% if e.course.handout_url %}
+        <p class="center"><a class="btn btn-soft" href="{{ e.course.handout_url }}" target="_blank" rel="noopener">{% include "partials/icon.html" with name="download" %}下載往年考題和線上測驗題</a></p>
+      {% endif %}
+    </section>
+  {% endfor %}
+
+  <section class="member-block">
+    <h2 class="bar-title">{% include "partials/icon.html" with name="star" cls="icon-fill" %}我的收藏課程</h2>
+    <div class="list-panel">
+      {% for course in favorites %}
+        <article class="plan-card">
+          <div class="plan-body">
+            <h3>{{ course.year }}學年度 {{ course.title }}</h3>
+            <p class="muted">{{ course.category }}｜{{ course.teaching_mode }}</p>
+          </div>
+          <div class="plan-actions">
+            <a class="btn btn-soft btn-sm" href="{% url 'course_detail' course.id %}">查看方案</a>
+            <form method="post" action="{% url 'toggle_favorite' course.id %}">
+              {% csrf_token %}
+              <button class="btn btn-outline btn-sm" type="submit">取消收藏</button>
+            </form>
+          </div>
+        </article>
+      {% empty %}
+        <p class="empty">還沒有收藏的課程，可在課程方案頁按「加入收藏」。</p>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}

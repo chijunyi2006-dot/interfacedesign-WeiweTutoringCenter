@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}考科與師資・線上試聽{% endblock %}
+
+{% block content %}
+<div class="container page">
+  <nav class="breadcrumb" aria-label="麵包屑">
+    <a href="{% url 'home' %}">{% include "partials/icon.html" with name="home" %}首頁</a>{% include "partials/icon.html" with name="chevron-right" cls="icon-sm sep" %}<span>考科與師資・線上試聽</span>
+  </nav>
+  <h1 class="page-title">考科與師資・線上試聽</h1>
+
+  <div class="filter-scope" data-filter-scope>
+    <form class="filters" role="search" onsubmit="return false">
+      <label class="filter-label" for="teacherKeyword">{% include "partials/icon.html" with name="search" %}快速篩選</label>
+      <input id="teacherKeyword" type="search" placeholder="輸入考科或老師姓名" data-filter-keyword>
+      <select data-filter="category" aria-label="選擇類別">
+        <option value="">全部類別</option>
+        {% for c in categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+      </select>
+      <select data-filter="department" aria-label="選擇科系">
+        <option value="">全部科系</option>
+        {% for d in departments %}<option value="{{ d }}">{{ d }}</option>{% endfor %}
+      </select>
+      <button class="btn btn-outline btn-sm" type="button" data-filter-reset>清除條件</button>
+    </form>
+
+    <p class="list-hint">點選考科查看對應師資與試聽，最多可勾選 3 位老師並列比較　·　共 <b data-filter-count>{{ teachers|length }}</b> 位老師</p>
+
+    <div class="list-panel teacher-grid">
+      {% for teacher in teachers %}
+        <!-- data-compare-* 給「師資比較」使用（作業一 Flow 2：最多 3 位並列） -->
+        <article class="teacher-card filter-item"
+                 data-category="{{ teacher.category }}"
+                 data-department="{{ teacher.department }}"
+                 data-compare-card="{{ teacher.id }}"
+                 data-compare-name="{{ teacher.name }} 老師"
+                 data-compare-subject="{{ teacher.subject }}"
+                 data-compare-education="{{ teacher.education }}"
+                 data-compare-rating="{{ teacher.rating }}"
+                 data-compare-success="{{ teacher.success_count }}"
+                 data-compare-tagline="{{ teacher.tagline }}">
+          <h2>{% include "partials/icon.html" with name="book" %}{{ teacher.subject }}</h2>
+          <p>{% include "partials/icon.html" with name="user" %}授課師資：{{ teacher.name }} 老師</p>
+          <p>{% include "partials/icon.html" with name="star" cls="icon-fill icon-amber" %}{{ teacher.tagline }}｜學生評價：
+            {% include "partials/stars.html" with rating=teacher.rating %}
+            ({{ teacher.rating }})
+          </p>
+          <p>{% include "partials/icon.html" with name="trophy" %}上榜學生 <b>{{ teacher.success_count }}</b> 位</p>
+          <div class="card-actions">
+            <button class="btn btn-outline btn-sm" type="button" data-compare-toggle="{{ teacher.id }}" aria-pressed="false">＋ 加入比較</button>
+            <button class="btn btn-soft btn-sm" type="button" data-dialog-open="teacher-{{ teacher.id }}">點擊查看</button>
+          </div>
+        </article>
+
+        <!-- 老師詳細資訊與試聽（點「點擊查看」或網址 #teacher-id 開啟） -->
+        <dialog id="teacher-{{ teacher.id }}" class="dialog dialog-wide">
+          <button class="dialog-x" type="button" data-dialog-close aria-label="關閉">{% include "partials/icon.html" with name="x" cls="icon-lg" %}</button>
+          <div class="teacher-head">
+            <div class="avatar" aria-hidden="true">{% include "partials/icon.html" with name="user" cls="icon-xl" %}</div>
+            <div>
+              <h3>{{ teacher.name }} 老師　<small>{{ teacher.subject }}</small></h3>
+              <p class="muted">學經歷：{{ teacher.education }}</p>
+              <p>學生評價：{% include "partials/stars.html" with rating=teacher.rating %} ({{ teacher.rating }} / 5.0)｜上榜學生 {{ teacher.success_count }} 位</p>
+            </div>
+          </div>
+
+          <h4 class="bar-title bar-sm">{% include "partials/icon.html" with name="video" %}精選試聽影片（站內播放）</h4>
+          {% if teacher.video_url %}
+            <div class="video-frame">
+              <iframe src="{{ teacher.video_url }}" title="{{ teacher.name }} 老師試聽影片" loading="lazy" allowfullscreen></iframe>
+            </div>
+          {% else %}
+            <div class="video-frame video-placeholder">試聽影片準備中</div>
+          {% endif %}
+
+          <h4 class="bar-title bar-sm bar-dark">{% include "partials/icon.html" with name="book" %}詳細授課與重點</h4>
+          <p class="syllabus">{{ teacher.highlights|linebreaksbr }}</p>
+
+          <!-- 學生對老師的心得（作業一 Bad UI 問題 5） -->
+          <h4 class="bar-title bar-sm bar-dark">{% include "partials/icon.html" with name="chat" %}學生心得</h4>
+          {% for review in teacher.reviews.all %}
+            <blockquote class="review">
+              <p>「{{ review.testimonial }}」</p>
+              <cite>— {{ review.student_name }}（{{ review.year }} 年 錄取 {{ review.school }} {{ review.department }}）</cite>
+            </blockquote>
+          {% empty %}
+            <p class="muted small">目前尚無學生心得。</p>
+          {% endfor %}
+
+          <div class="dialog-actions">
+            {% if user.is_authenticated and teacher.handout_url %}
+              <a class="btn btn-outline" href="{{ teacher.handout_url }}" target="_blank" rel="noopener">{% include "partials/icon.html" with name="download" %}下載歷屆試題與解析</a>
+            {% elif not user.is_authenticated %}
+              <button class="btn btn-outline" type="button" data-requires-login>{% include "partials/icon.html" with name="lock" %}下載歷屆試題與解析</button>
+            {% endif %}
+            <button class="btn btn-outline" type="button" data-compare-toggle="{{ teacher.id }}" aria-pressed="false">＋ 加入比較</button>
+            <a class="btn btn-primary" href="{% url 'contact' %}?category={{ teacher.category|urlencode }}&amp;course={{ teacher.name|urlencode }}%E8%80%81%E5%B8%AB%20{{ teacher.subject|urlencode }}">立即報名{% include "partials/icon.html" with name="arrow-right" %}</a>
+          </div>
+        </dialog>
+      {% empty %}
+        <p class="empty">目前尚無師資資料。</p>
+      {% endfor %}
+      <p class="empty" data-filter-empty hidden>找不到符合條件的老師，請調整篩選條件。</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 師資比較列（勾選後出現在畫面下方） ===== -->
+<div class="compare-bar" data-compare-bar hidden>
+  <div class="container compare-inner">
+    <span class="compare-title">師資比較 <b data-compare-count>0</b> / 3</span>
+    <div class="compare-chips" data-compare-chips></div>
+    <button class="btn btn-outline btn-sm" type="button" data-compare-clear>清除</button>
+    <button class="btn btn-primary btn-sm" type="button" data-compare-open>開始比較</button>
+  </div>
+</div>
+
+<dialog id="compareDialog" class="dialog dialog-wide">
+  <button class="dialog-x" type="button" data-dialog-close aria-label="關閉">{% include "partials/icon.html" with name="x" cls="icon-lg" %}</button>
+  <h3>{% include "partials/icon.html" with name="layers" %}師資比較</h3>
+  <div class="table-wrap compare-wrap">
+    <table class="compare-table" data-compare-table></table>
+  </div>
+</dialog>
+{% endblock %}

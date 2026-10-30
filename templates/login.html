@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}會員登入{% endblock %}
+
+{% block content %}
+<div class="container page login-page">
+  <!-- 使用 Django 內建 LoginView：欄位名稱必須是 username / password -->
+  <form class="login-card" method="post" action="{% url 'login' %}" novalidate>
+    {% csrf_token %}
+    <div class="login-brand">
+      <span class="brand-mark">偉文</span>
+      <span class="brand-name">雲林偉文</span>
+    </div>
+    <h1>雲端學習中心單一登入 (SSO)</h1>
+
+    {% if form.errors %}
+      <div class="alert alert-error">帳號或密碼錯誤，請再試一次。</div>
+    {% endif %}
+    {% if next and not user.is_authenticated %}
+      <p class="muted small">請先登入才能使用會員功能。</p>
+    {% endif %}
+
+    <label class="sr-only" for="id_username">帳號</label>
+    <input id="id_username" name="username" type="text" placeholder="帳號" autocomplete="username"
+           value="{{ form.username.value|default:'' }}" required>
+    <label class="sr-only" for="id_password">密碼</label>
+    <input id="id_password" name="password" type="password" placeholder="密碼" autocomplete="current-password" required>
+    <input type="hidden" name="next" value="{{ next|default:'' }}">
+
+    <div class="login-actions">
+      <button class="link-btn" type="button" data-dialog-open="forgotDialog">忘記密碼？</button>
+      <button class="btn btn-soft-blue" type="submit">登入</button>
+    </div>
+  </form>
+</div>
+
+<dialog id="forgotDialog" class="dialog">
+  <h3>忘記密碼</h3>
+  <p>請攜帶學員證至櫃台，或透過 LINE 官方帳號聯絡專人協助重設密碼。</p>
+  <div class="dialog-actions">
+    <button class="btn btn-primary" type="button" data-dialog-close>我知道了</button>
+  </div>
+</dialog>
+{% endblock %}

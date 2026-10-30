@@ -1,0 +1,133 @@
+{% load static %}<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}首頁{% endblock %}｜雲林偉文文教機構</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <script src="{% static 'js/script.js' %}" defer></script>
+</head>
+<!-- data-auth：給 script.js 判斷目前是否登入（1 = 已登入、0 = 訪客） -->
+<body data-auth="{% if user.is_authenticated %}1{% else %}0{% endif %}">
+  {% include "partials/icons.html" %}
+
+  <!-- ===== 導覽列（所有頁面共用） ===== -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <button class="menu-toggle" type="button" aria-label="開啟選單" aria-controls="siteNav" aria-expanded="false">
+        {% include "partials/icon.html" with name="menu" cls="icon-lg" %}
+      </button>
+
+      <a class="brand" href="{% url 'home' %}">
+        <span class="brand-mark">偉文</span>
+        <span class="brand-name">雲林偉文</span>
+      </a>
+
+      <nav id="siteNav" class="site-nav" aria-label="主選單">
+        <button class="nav-close" type="button" aria-label="關閉選單">{% include "partials/icon.html" with name="x" cls="icon-lg" %}</button>
+
+        <div class="nav-dropdown">
+          <button class="nav-link dropdown-toggle" type="button" aria-expanded="false">
+            {% include "partials/icon.html" with name="book" %}主要課程{% include "partials/icon.html" with name="chevron-down" cls="icon-sm caret" %}
+          </button>
+          <!--
+            兩層選單（作業一 Frame 4、Frame 7）：
+            研究所的各所 → 該所的考科與師資（Flow 2 學生）；公職/國營的各類 → 該類課程與簡章（Flow 3 社會人士）
+          -->
+          <div class="dropdown-menu">
+            <div class="menu-group">
+              <a class="menu-head" href="{% url 'course_list' %}?category=研究所">研究所</a>
+              <a class="menu-sub" href="{% url 'teacher_list' %}?category=研究所&amp;department=資訊工程類">資訊工程所</a>
+              <a class="menu-sub" href="{% url 'teacher_list' %}?category=研究所&amp;department=電機電子類">電機所</a>
+              <a class="menu-sub" href="{% url 'teacher_list' %}?category=研究所&amp;department=商管類">商研所</a>
+            </div>
+            <div class="menu-group">
+              <a class="menu-head" href="{% url 'course_list' %}?category=轉學考">轉學考</a>
+            </div>
+            <div class="menu-group">
+              <a class="menu-head" href="{% url 'course_list' %}?category=公職/國營">公職／國營</a>
+              <a class="menu-sub" href="{% url 'course_list' %}?category=公職/國營&amp;department=資訊工程類">國營事業－資訊類</a>
+              <a class="menu-sub" href="{% url 'course_list' %}?category=公職/國營&amp;department=機械類">國營事業－機械類</a>
+            </div>
+            <a class="menu-all" href="{% url 'course_list' %}">全部課程方案</a>
+          </div>
+        </div>
+        <a class="nav-link" href="{% url 'teacher_list' %}">{% include "partials/icon.html" with name="id-card" %}師資介紹</a>
+        <a class="nav-link" href="{% url 'ranking_list' %}">{% include "partials/icon.html" with name="trophy" %}榜單榮譽</a>
+        <!-- 雲端學習：同站同風格，未登入會先到 SSO 登入頁（作業一 Bad UI 問題 1、Flow 3） -->
+        <a class="nav-link" href="{% url 'member' %}">{% include "partials/icon.html" with name="play" %}雲端學習</a>
+        <a class="nav-link" href="{% url 'contact' %}">{% include "partials/icon.html" with name="pin" %}聯絡我們</a>
+
+        <!-- 登入前 / 登入後 顯示不同按鈕 -->
+        {% if user.is_authenticated %}
+          <a class="nav-link nav-member" href="{% url 'member' %}">{% include "partials/icon.html" with name="user" %}{{ user.first_name|default:user.username }}</a>
+          <form class="nav-logout" method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button class="btn btn-outline btn-sm" type="submit">{% include "partials/icon.html" with name="logout" %}登出</button>
+          </form>
+        {% else %}
+          <a class="btn btn-primary btn-sm nav-login" href="{% url 'login' %}">{% include "partials/icon.html" with name="login" %}會員登入</a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+  <div class="nav-backdrop" hidden></div>
+
+  <!-- Django messages（例如：登入成功、已加入收藏、諮詢已送出） -->
+  {% if messages %}
+    <div class="container messages">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{% include "partials/icon.html" with name="check" %}{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- ===== 頁尾 ===== -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <span class="brand-mark">偉文</span>
+        <span class="brand-name">雲林偉文</span>
+      </div>
+      {% include "partials/contact_info.html" %}
+      <a class="btn btn-primary btn-sm footer-cta" href="{% url 'contact' %}">{% include "partials/icon.html" with name="send" %}線上諮詢</a>
+      <p class="copyright">Copyrights © 雲林縣私立偉文文理短期補習班 All Rights Reserved.</p>
+    </div>
+  </footer>
+
+  <!-- ===== 未登入時點到會員功能，跳出此對話框 ===== -->
+  <dialog id="loginDialog" class="dialog">
+    <h3>{% include "partials/icon.html" with name="lock" %}此功能需要先登入</h3>
+    <p>收藏課程、下載講義與觀看完整課程影片為會員專屬功能，請先登入雲端學習中心。</p>
+    <div class="dialog-actions">
+      <button class="btn btn-outline" type="button" data-dialog-close>稍後再說</button>
+      <a class="btn btn-primary" href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">前往登入</a>
+    </div>
+  </dialog>
+
+  <!-- ===== 固定浮動按鈕：LINE 專人諮詢（作業一 Flow 1） ===== -->
+  <button class="float-line" type="button" data-dialog-open="lineDialog" aria-label="LINE 專人諮詢">
+    {% include "partials/icon.html" with name="chat" %}<span>LINE 專人諮詢</span>
+  </button>
+
+  <!-- LINE 加好友對話框（全站共用）：手機點按鈕加入、電腦掃 QR Code -->
+  <dialog id="lineDialog" class="dialog">
+    <button class="dialog-x" type="button" data-dialog-close aria-label="關閉">{% include "partials/icon.html" with name="x" cls="icon-lg" %}</button>
+    <h3>{% include "partials/icon.html" with name="chat" %}LINE 專人諮詢</h3>
+    <!-- 示意圖（不可掃描）；拿到官方 QR Code 後換掉 static/img/line-qr-sample.svg 即可 -->
+    <img class="qr-image" src="{% static 'img/line-qr-sample.svg' %}" alt="LINE QR Code 示意圖" width="200" height="200">
+    <p class="center">LINE ID：<b>@yunlinwaywun</b></p>
+    <p class="muted small center">電腦請用手機 LINE 掃描 QR Code；手機可直接點下方按鈕加入。<br>想指定諮詢時段，也可以<a href="{% url 'contact' %}">填寫諮詢表單</a>。</p>
+    <div class="dialog-actions">
+      <!-- 拿到官方帳號後，把 href 改成 https://line.me/R/ti/p/@官方ID，並刪掉 aria-disabled -->
+      <a class="btn btn-line" href="#" aria-disabled="true">{% include "partials/icon.html" with name="chat" %}開啟 LINE 加入好友</a>
+    </div>
+  </dialog>
+
+  <div class="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>

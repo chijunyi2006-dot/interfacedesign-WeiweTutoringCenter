@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}首頁{% endblock %}
+
+{% block content %}
+<!-- ===== Hero 橫幅 ===== -->
+<section class="hero">
+  <div class="container hero-inner">
+    <h1 class="hero-title">
+      <span>加入偉文　前程似錦</span>
+      <span>雲端學院　效果卓越</span>
+    </h1>
+    <p class="hero-sub">研究所｜轉學考｜公職・國營　實體、直播、雲端隨選三種上課方式</p>
+  </div>
+</section>
+
+<!-- ===== 依身分分流（對應作業一三種 Persona） ===== -->
+<section class="identity">
+  <div class="container">
+    <h2 class="pill-title">歡迎光臨！請依您的身分選擇</h2>
+    <div class="identity-grid">
+      <a class="identity-card" href="{% url 'course_list' %}?category=研究所">
+        <strong>我是家長</strong>
+        <span>查詢升學方案與研究所</span>
+      </a>
+      <a class="identity-card" href="{% url 'teacher_list' %}?category=研究所">
+        <strong>我是學生</strong>
+        <span>查詢考科與線上試聽</span>
+      </a>
+      <a class="identity-card" href="{% url 'course_list' %}?category=公職/國營">
+        <strong>我是社會人士</strong>
+        <span>查詢國營／課程資訊</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Hot News：兩個可收合區塊 ===== -->
+<section class="news">
+  <div class="container">
+    <h2 class="hot-badge">{% include "partials/icon.html" with name="flame" %}Hot News</h2>
+    <div class="news-grid">
+      <details class="accordion accordion-amber" open>
+        <summary>{% include "partials/icon.html" with name="megaphone" %}最新消息</summary>
+        <ul class="news-list">
+          {% for news in latest_news %}
+            <li><time datetime="{{ news.date|date:'Y-m-d' }}">{{ news.date|date:"m/d" }}</time>{{ news.title }}</li>
+          {% empty %}
+            <li class="empty">目前沒有最新消息。</li>
+          {% endfor %}
+        </ul>
+      </details>
+
+      <details class="accordion accordion-orange">
+        <summary>{% include "partials/icon.html" with name="cap" %}研究所考試資訊</summary>
+        <ul class="news-list">
+          {% for news in exam_news %}
+            <li><time datetime="{{ news.date|date:'Y-m-d' }}">{{ news.date|date:"m/d" }}</time>{{ news.title }}</li>
+          {% empty %}
+            <li class="empty">目前沒有考試資訊。</li>
+          {% endfor %}
+        </ul>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 熱門課程 ===== -->
+<section class="featured">
+  <div class="container">
+    <div class="section-head">
+      <h2 class="bar-title">熱門課程方案</h2>
+      <a class="link-more" href="{% url 'course_list' %}">查看全部方案{% include "partials/icon.html" with name="arrow-right" %}</a>
+    </div>
+    <div class="card-grid">
+      {% for course in featured_courses %}
+        <a class="course-card" href="{% url 'course_detail' course.id %}">
+          <span class="tag">{{ course.category }}</span>
+          <h3>{{ course.year }}學年度 {{ course.title }}</h3>
+          <p><b>包含科目：</b>{{ course.subjects }}</p>
+          <p><b>授課方式：</b>{{ course.teaching_mode }}</p>
+          <span class="btn btn-soft btn-sm">點擊查看詳細方案</span>
+        </a>
+      {% empty %}
+        <p class="empty">目前尚無課程資料。</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

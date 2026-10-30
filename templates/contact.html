@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}聯絡我們{% endblock %}
+
+{% block content %}
+<div class="container page">
+  <nav class="breadcrumb" aria-label="麵包屑">
+    <a href="{% url 'home' %}">{% include "partials/icon.html" with name="home" %}首頁</a>{% include "partials/icon.html" with name="chevron-right" cls="icon-sm sep" %}<span>聯絡我們</span>
+  </nav>
+  <h1 class="page-title">聯絡我們</h1>
+  <p class="lead">有任何課程、費用或報考問題，歡迎填寫諮詢表單或加入 LINE，專人會盡快與您聯絡。</p>
+
+  <div class="contact-layout">
+    <!-- ===== 左：線上諮詢表單（欄位對應後端 ContactForm） ===== -->
+    <form class="box contact-form" method="post" action="{% url 'contact' %}">
+      {% csrf_token %}
+      <h2 class="chip-title">{% include "partials/icon.html" with name="mail" %}線上諮詢表單</h2>
+
+      {% if form.errors %}
+        <div class="alert alert-error">表單有欄位需要修正，請查看下方紅字提示。</div>
+      {% endif %}
+
+      <div class="form-row">
+        <label for="id_name">姓名 <span class="req">*</span></label>
+        <input id="id_name" name="name" type="text" autocomplete="name" required
+               value="{{ form.name.value|default:'' }}" placeholder="例如：王小明">
+        {% if form.name.errors %}<p class="field-error">{{ form.name.errors.0 }}</p>{% endif %}
+      </div>
+
+      <div class="form-row">
+        <label for="id_phone">聯絡電話 <span class="req">*</span></label>
+        <input id="id_phone" name="phone" type="tel" autocomplete="tel" required inputmode="tel"
+               value="{{ form.phone.value|default:'' }}" placeholder="例如：0912-345-678">
+        {% if form.phone.errors %}<p class="field-error">{{ form.phone.errors.0 }}</p>{% endif %}
+      </div>
+
+      <div class="form-grid">
+        <div class="form-row">
+          <label for="id_identity">您的身分 <span class="req">*</span></label>
+          <select id="id_identity" name="identity" required>
+            <option value="">請選擇</option>
+            {% for value, label in form.identity.field.choices %}{% if value %}
+              <option value="{{ value }}"{% if form.identity.value == value %} selected{% endif %}>{{ label }}</option>
+            {% endif %}{% endfor %}
+          </select>
+          {% if form.identity.errors %}<p class="field-error">{{ form.identity.errors.0 }}</p>{% endif %}
+        </div>
+        <div class="form-row">
+          <label for="id_campus">諮詢據點 <span class="req">*</span></label>
+          <select id="id_campus" name="campus" required>
+            <option value="">請選擇</option>
+            {% for value, label in form.campus.field.choices %}{% if value %}
+              <option value="{{ value }}"{% if form.campus.value == value %} selected{% endif %}>{{ label }}</option>
+            {% endif %}{% endfor %}
+          </select>
+          {% if form.campus.errors %}<p class="field-error">{{ form.campus.errors.0 }}</p>{% endif %}
+        </div>
+      </div>
+
+      <fieldset class="form-row">
+        <legend>想詢問的類別 <span class="req">*</span></legend>
+        <div class="chip-group">
+          {% for value, label in form.category.field.choices %}{% if value %}
+            <label class="chip-option">
+              <input type="radio" name="category" value="{{ value }}" required{% if form.category.value == value %} checked{% endif %}>
+              <span>{{ label }}</span>
+            </label>
+          {% endif %}{% endfor %}
+        </div>
+        {% if form.category.errors %}<p class="field-error">{{ form.category.errors.0 }}</p>{% endif %}
+      </fieldset>
+
+      <!-- 希望聯絡時段（作業一 Flow 1：選擇諮詢時段） -->
+      <div class="form-row">
+        <label for="id_contact_time">希望聯絡時段 <span class="req">*</span></label>
+        <select id="id_contact_time" name="contact_time" required>
+          <option value="">請選擇</option>
+          {% for value, label in form.contact_time.field.choices %}{% if value %}
+            <option value="{{ value }}"{% if form.contact_time.value == value %} selected{% endif %}>{{ label }}</option>
+          {% endif %}{% endfor %}
+        </select>
+        {% if form.contact_time.errors %}<p class="field-error">{{ form.contact_time.errors.0 }}</p>{% endif %}
+      </div>
+
+      <div class="form-row">
+        <label for="id_school_info">學校／科系／年級</label>
+        <input id="id_school_info" name="school_info" type="text"
+               value="{{ form.school_info.value|default:'' }}" placeholder="例如：雲科大 資工系 大三（社會人士可填目前職業）">
+      </div>
+
+      <div class="form-row">
+        <label for="id_message">想了解的資訊 <span class="req">*</span></label>
+        <textarea id="id_message" name="message" rows="5" required
+                  placeholder="例如：想了解資工所雲端隨選班的費用與分期方式">{{ form.message.value|default:'' }}</textarea>
+        {% if form.message.errors %}<p class="field-error">{{ form.message.errors.0 }}</p>{% endif %}
+      </div>
+
+      <div class="form-row">
+        <label for="id_line_id">LINE ID（選填，方便我們用 LINE 回覆）</label>
+        <input id="id_line_id" name="line_id" type="text" value="{{ form.line_id.value|default:'' }}">
+      </div>
+
+      <label class="check-row">
+        <input type="checkbox" name="agree" required{% if form.agree.value %} checked{% endif %}>
+        <span>我同意偉文以上述資料與我聯繫，資料僅用於課程諮詢。<span class="req">*</span></span>
+      </label>
+      {% if form.agree.errors %}<p class="field-error">{{ form.agree.errors.0 }}</p>{% endif %}
+
+      <button class="btn btn-primary btn-block" type="submit">{% include "partials/icon.html" with name="send" %}送出諮詢</button>
+    </form>
+
+    <!-- ===== 右：LINE、據點資訊、地圖 ===== -->
+    <aside class="contact-side">
+      <section class="box line-card">
+        <h2 class="side-title">{% include "partials/icon.html" with name="chat" %}LINE 即時諮詢</h2>
+        <p>加入官方 LINE，上課時段、費用與試聽都可以直接問，回覆最快。</p>
+        <button class="btn btn-line btn-block" type="button" data-dialog-open="lineDialog">{% include "partials/icon.html" with name="chat" %}加入 LINE 好友</button>
+      </section>
+
+      <section class="box">
+        <h2 class="side-title">{% include "partials/icon.html" with name="building" %}據點與服務時間</h2>
+        {% include "partials/contact_info.html" %}
+      </section>
+
+      <section class="box">
+        <h2 class="side-title">{% include "partials/icon.html" with name="map" %}交通位置</h2>
+        <!--
+          Google 地圖嵌入（不需 API Key）。兩個據點用按鈕切換：
+          data-address 給嵌入地圖用（用地址才一定會顯示紅色標記），
+          data-place 給「在 Google 地圖開啟」用（開啟店家頁，可看評價與路線）。
+        -->
+        <div class="map-tabs" role="tablist" aria-label="選擇據點">
+          <button class="map-tab active" type="button" role="tab" aria-selected="true"
+                  data-address="雲林縣斗六市平等街47號" data-place="斗六偉文">雲科據點（斗六）</button>
+          <button class="map-tab" type="button" role="tab" aria-selected="false"
+                  data-address="雲林縣虎尾鎮中正路396號" data-place="虎尾偉文">虎科據點（虎尾）</button>
+        </div>
+        <div class="map-frame">
+          <iframe id="mapFrame" src="https://www.google.com/maps?q=%E9%9B%B2%E6%9E%97%E7%B8%A3%E6%96%97%E5%85%AD%E5%B8%82%E5%B9%B3%E7%AD%89%E8%A1%9747%E8%99%9F&amp;hl=zh-TW&amp;z=16&amp;output=embed"
+                  title="偉文補習班位置地圖" allowfullscreen></iframe>
+        </div>
+        <a class="link-more map-open" id="mapLink" href="https://www.google.com/maps/search/?api=1&amp;query=%E6%96%97%E5%85%AD%E5%81%89%E6%96%87" target="_blank" rel="noopener">在 Google 地圖開啟{% include "partials/icon.html" with name="arrow-right" %}</a>
+      </section>
+    </aside>
+  </div>
+
+  <!-- ===== 常見問題 ===== -->
+  <section class="faq">
+    <h2 class="bar-title">常見問題</h2>
+    <details class="faq-item">
+      <summary>可以先試聽再決定要不要報名嗎？</summary>
+      <p>可以。每位老師都有精選試聽影片，請到「師資介紹」點選老師查看；若想到現場試聽，請在表單中註明。</p>
+    </details>
+    <details class="faq-item">
+      <summary>實體、直播、雲端隨選可以混搭嗎？</summary>
+      <p>可以。多數課程支援實體班搭配雲端隨選補課，詳細方案可在各課程頁的「上課方式與費用方案」查看。</p>
+    </details>
+    <details class="faq-item">
+      <summary>學費可以分期嗎？</summary>
+      <p>提供分期與早鳥優惠，實際方案依課程而定，歡迎透過表單或 LINE 詢問。</p>
+    </details>
+  </section>
+</div>
+{% endblock %}

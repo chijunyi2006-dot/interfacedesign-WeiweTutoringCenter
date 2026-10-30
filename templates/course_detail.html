@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}{{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="container page">
+  <nav class="breadcrumb" aria-label="麵包屑">
+    <a href="{% url 'home' %}">{% include "partials/icon.html" with name="home" %}首頁</a>{% include "partials/icon.html" with name="chevron-right" cls="icon-sm sep" %}
+    <a href="{% url 'course_list' %}?category={{ course.category|urlencode }}">{{ course.category }}</a>{% include "partials/icon.html" with name="chevron-right" cls="icon-sm sep" %}
+    <span>{{ course.title }}</span>
+  </nav>
+  <h1 class="page-title">{{ course.year }}學年度 {{ course.title }}</h1>
+
+  <div class="detail-layout">
+    <div class="detail-main">
+      <!-- 報名時程時間軸（作業一 Flow 3／Frame 8；沒有資料就不顯示） -->
+      {% if course.milestones.all %}
+        <section class="box timeline-box">
+          <h2 class="chip-title">{% include "partials/icon.html" with name="clock" %}考試時程</h2>
+          <ol class="timeline">
+            {% for m in course.milestones.all %}
+              <li><span class="timeline-date">{{ m.date_text }}</span><span class="timeline-label">{{ m.label }}</span></li>
+            {% endfor %}
+          </ol>
+        </section>
+      {% endif %}
+
+      <!-- 核心課程與考科重點：文字可複製，並可用關鍵字搜尋（作業一 Bad UI 問題 3、Frame 8） -->
+      <section class="box" data-filter-scope>
+        <div class="box-head">
+          <h2 class="chip-title">{% include "partials/icon.html" with name="book" %}核心課程與考科重點</h2>
+          <label class="mini-search">
+            {% include "partials/icon.html" with name="search" %}
+            <input type="search" placeholder="搜尋考科重點，例如：SQL" aria-label="搜尋考科重點" data-filter-keyword>
+          </label>
+        </div>
+        <ul class="syllabus-list">
+          {% for line in course.syllabus.splitlines %}{% if line %}
+            <li class="filter-item">{{ line }}</li>
+          {% endif %}{% endfor %}
+        </ul>
+        <p class="empty small" data-filter-empty hidden>找不到相關考科重點。</p>
+      </section>
+
+      <!-- 授課師資：考科連到對應老師（作業一 Bad UI 問題 3、Flow 1「師資連結」） -->
+      {% if course.teachers.all %}
+        <section>
+          <h2 class="bar-title">{% include "partials/icon.html" with name="id-card" %}授課師資</h2>
+          <div class="mini-teacher-grid">
+            {% for t in course.teachers.all %}
+              <a class="mini-teacher" href="{% url 'teacher_list' %}#teacher-{{ t.id }}">
+                <span class="mini-subject">{{ t.subject }}</span>
+                <span class="mini-name">{{ t.name }} 老師</span>
+                <span class="mini-meta">{% include "partials/stars.html" with rating=t.rating %} {{ t.rating }}｜上榜學生 {{ t.success_count }} 位</span>
+                <span class="mini-link">查看師資與試聽{% include "partials/icon.html" with name="arrow-right" %}</span>
+              </a>
+            {% endfor %}
+          </div>
+        </section>
+      {% endif %}
+
+      <!-- 上課方式與費用方案 -->
+      <section>
+        <h2 class="bar-title">上課方式與費用方案</h2>
+        <div class="plan-options">
+          {% for plan in course.plans.all %}
+            <article class="option-card">
+              <h3>{{ plan.name }}</h3>
+              <p><b>時段與彈性：</b>{{ plan.schedule }}</p>
+              <p><b>課程特色：</b>{{ plan.feature }}</p>
+              <div class="option-foot">
+                <p class="price">NT$ {{ plan.price_min }} ～ NT$ {{ plan.price_max }}</p>
+                <a class="btn btn-soft btn-sm" href="{% url 'contact' %}?category={{ course.category|urlencode }}&amp;course={{ course.title|urlencode }}&amp;plan={{ plan.name|urlencode }}">報名此方案{% include "partials/icon.html" with name="arrow-right" %}</a>
+              </div>
+            </article>
+          {% empty %}
+            <p class="empty">費用方案整理中，歡迎直接聯絡我們。</p>
+          {% endfor %}
+        </div>
+        <p class="muted small">報名後由專人聯繫確認方案與繳費，完成後會寄送雲端學習中心帳號密碼。</p>
+      </section>
+
+      <!-- 學長姐心得（取自榜單資料） -->
+      <section>
+        <h2 class="bar-title">上榜學長姐心得</h2>
+        {% for story in course.testimonials.all %}
+          <article class="story-card">
+            <div class="avatar" aria-hidden="true">{% include "partials/icon.html" with name="user" cls="icon-xl" %}</div>
+            <div>
+              <h3>{{ story.student_name }}（錄取：{{ story.school }} {{ story.department }}｜榮譽：{{ story.honor }}）</h3>
+              <p class="muted">成績表現：{{ story.scores }}</p>
+              <p>心得評價：「{{ story.testimonial }}」</p>
+            </div>
+          </article>
+        {% empty %}
+          <p class="empty">目前尚無學長姐心得。</p>
+        {% endfor %}
+      </section>
+    </div>
+
+    <!-- 右側操作按鈕：收藏 / 下載 / 分享 / LINE / 詢問 -->
+    <aside class="detail-side">
+      {% if user.is_authenticated %}
+        <form method="post" action="{% url 'toggle_favorite' course.id %}">
+          {% csrf_token %}
+          <button class="side-btn side-amber" type="submit">
+            {% if is_favorited %}{% include "partials/icon.html" with name="star" cls="icon-fill" %}已收藏（點擊取消）{% else %}{% include "partials/icon.html" with name="star" %}加入收藏{% endif %}
+          </button>
+        </form>
+        {% if course.handout_url %}
+          <a class="side-btn side-blue" href="{{ course.handout_url }}" target="_blank" rel="noopener">{% include "partials/icon.html" with name="download" %}下載歷屆試題與解析</a>
+        {% endif %}
+      {% else %}
+        <!-- 訪客：按鈕仍顯示，點擊後跳出登入提示 -->
+        <button class="side-btn side-amber" type="button" data-requires-login>{% include "partials/icon.html" with name="star" %}加入收藏</button>
+        <button class="side-btn side-blue" type="button" data-requires-login>{% include "partials/icon.html" with name="lock" %}下載歷屆試題與解析</button>
+      {% endif %}
+      <button class="side-btn side-outline" type="button" data-share>{% include "partials/icon.html" with name="share" %}分享給孩子／朋友</button>
+      <button class="side-btn side-green" type="button" data-dialog-open="lineDialog">{% include "partials/icon.html" with name="chat" %}LINE 專人諮詢</button>
+      <a class="side-btn side-outline" href="{% url 'contact' %}?category={{ course.category|urlencode }}&amp;course={{ course.title|urlencode }}">{% include "partials/icon.html" with name="mail" %}填表詢問此課程</a>
+    </aside>
+  </div>
+</div>
+{% endblock %}

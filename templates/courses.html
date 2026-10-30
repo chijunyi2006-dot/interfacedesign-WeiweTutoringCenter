@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}課程方案總覽{% endblock %}
+
+{% block content %}
+<div class="container page">
+  <nav class="breadcrumb" aria-label="麵包屑">
+    <a href="{% url 'home' %}">{% include "partials/icon.html" with name="home" %}首頁</a>{% include "partials/icon.html" with name="chevron-right" cls="icon-sm sep" %}<span>升學方案總覽</span>
+  </nav>
+  <h1 class="page-title">升學方案總覽</h1>
+
+  <!--
+    篩選區：script.js 會用 data-filter 的名稱，對應每張卡片上的 data-* 屬性做比對。
+    網址可帶參數預先篩選，例如 ?category=研究所&department=資訊工程類
+  -->
+  <div class="filter-scope" data-filter-scope>
+    <form class="filters" role="search" onsubmit="return false">
+      <label class="filter-label" for="courseKeyword">{% include "partials/icon.html" with name="search" %}快速篩選</label>
+      <input id="courseKeyword" type="search" placeholder="輸入關鍵字，例如：演算法、計概" data-filter-keyword>
+      <select data-filter="category" aria-label="選擇類別">
+        <option value="">全部類別</option>
+        {% for c in categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+      </select>
+      <select data-filter="department" aria-label="選擇科系">
+        <option value="">全部科系</option>
+        {% for d in departments %}<option value="{{ d }}">{{ d }}</option>{% endfor %}
+      </select>
+      <select data-filter="mode" data-match="contains" aria-label="選擇上課方式">
+        <option value="">全部上課方式</option>
+        <option value="實體">實體面授</option>
+        <option value="直播">線上直播</option>
+        <option value="雲端">雲端隨選</option>
+      </select>
+      <button class="btn btn-outline btn-sm" type="button" data-filter-reset>清除條件</button>
+    </form>
+
+    <p class="result-count">共 <b data-filter-count>{{ courses|length }}</b> 個方案符合條件</p>
+
+    <div class="list-panel">
+      {% for course in courses %}
+        <article class="plan-card filter-item"
+                 data-category="{{ course.category }}"
+                 data-department="{{ course.department }}"
+                 data-mode="{{ course.teaching_mode }}">
+          <div class="plan-body">
+            <div class="plan-tags">
+              <span class="tag">{{ course.category }}</span>
+              <span class="tag tag-blue">{{ course.department }}</span>
+            </div>
+            <h2>{{ course.year }}學年度 {{ course.title }}</h2>
+            <p><b>包含科目：</b>{{ course.subjects }}</p>
+            <p><b>授課方式：</b>{{ course.teaching_mode }}</p>
+            <p><b>費用區間：</b>{{ course.price_note }}</p>
+          </div>
+          <a class="btn btn-soft" href="{% url 'course_detail' course.id %}">點擊查看詳細方案</a>
+        </article>
+      {% empty %}
+        <p class="empty">目前尚無課程方案資料。</p>
+      {% endfor %}
+      <p class="empty" data-filter-empty hidden>找不到符合條件的方案，請調整篩選條件。</p>
+    </div>
+  </div>
+</div>
+{% endblock %}
