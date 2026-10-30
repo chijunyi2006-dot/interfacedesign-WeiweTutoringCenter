@@ -1,5 +1,18 @@
+# Python 快取與編譯檔
 __pycache__/
-.venv/
 *.pyc
+*.pyo
+*.pyd
+
+# 虛擬環境
+.venv/
+venv/
+ENV/
+
+# 資料庫與環境變數
 db.sqlite3
 .env
+
+# IDE / 編輯器設定
+.vscode/
+.idea/
