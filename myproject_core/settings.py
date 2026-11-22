@@ -30,6 +30,10 @@ DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = ['.onrender.com', '127.0.0.1', 'localhost']
 
+# Render 在前面處理 HTTPS：沒有這兩行，線上的 POST（登入、收藏、聯絡我們、/api/events/、/api/feedback/）可能被 CSRF 擋成 403
+CSRF_TRUSTED_ORIGINS = ['https://*.onrender.com']
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 
 # Application definition
 
@@ -41,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'school',  # Add your app here
+    'tracking',  # Week11：操作紀錄（/api/events/）與意見回饋（/api/feedback/）
 ]
 
 MIDDLEWARE = [
@@ -78,9 +83,11 @@ import dj_database_url
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
+# 連線字串（含密碼）不寫在程式碼裡：Render 上設定環境變數 DATABASE_URL 指到 Neon；
+# 本機沒設 DATABASE_URL 時用 SQLite，runserver／migrate 才不會直接動到 Neon 的正式資料。
 DATABASES = {
     'default': dj_database_url.config(
-        default='postgresql://neondb_owner:npg_LpijqVG54onQ@ep-dawn-tree-b41nxrn9-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require',
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
         conn_max_age=600,
         conn_health_checks=True,
     )

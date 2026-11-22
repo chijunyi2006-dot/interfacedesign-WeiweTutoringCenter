@@ -16,3 +16,6 @@ db.sqlite3
 # IDE / 編輯器設定
 .vscode/
 .idea/
+
+# collectstatic 產生的檔案
+staticfiles/

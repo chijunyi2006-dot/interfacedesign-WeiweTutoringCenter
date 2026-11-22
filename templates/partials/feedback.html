@@ -1,0 +1,33 @@
+<!--
+  意見回饋區（Week11）：目前只有首頁使用（由 index.html 引入）。
+  送出由 static/js/feedback.js 處理：POST 到 {% url 'receive_feedback' %}，後端存進 Feedback 資料表。
+  data-page-id 由 feedback.js 依網址自動填入（home、courses、teachers…），與 tracker.js 的 page_id 相同。
+-->
+<section class="feedback-section" aria-labelledby="feedback-title">
+  <div class="container">
+    <h2 id="feedback-title">網站意見回饋</h2>
+    <p class="muted">這個頁面對你有幫助嗎？歡迎留下評價與建議。</p>
+    <form id="feedback-form" class="feedback-form" data-api-url="{% url 'receive_feedback' %}" novalidate>
+      {% csrf_token %}
+      <fieldset class="form-row feedback-rating">
+        <legend>頁面評價（必填）</legend>
+        <label class="rating-option">
+          <input type="radio" name="rating" value="like" required>
+          <span>{% include "partials/icon.html" with name="thumb-up" %}有幫助</span>
+        </label>
+        <label class="rating-option">
+          <input type="radio" name="rating" value="dislike" required>
+          <span>{% include "partials/icon.html" with name="thumb-down" %}沒幫助</span>
+        </label>
+      </fieldset>
+      <div class="form-row">
+        <label for="feedback-comment">你的意見（必填，最多 2000 字）</label>
+        <textarea id="feedback-comment" name="comment" rows="4" maxlength="2000" required
+                  placeholder="例如：找不到課程費用、篩選很好用……"></textarea>
+        <p class="muted small">請勿填寫密碼、電話等敏感個人資訊。</p>
+      </div>
+      <button id="feedback-submit" class="btn btn-primary" type="submit">{% include "partials/icon.html" with name="send" %}送出回饋</button>
+      <p id="feedback-message" class="feedback-message" role="status" aria-live="polite"></p>
+    </form>
+  </div>
+</section>

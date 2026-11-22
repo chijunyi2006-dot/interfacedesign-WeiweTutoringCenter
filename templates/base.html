@@ -5,7 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}首頁{% endblock %}｜雲林偉文文教機構</title>
   <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <!-- 個別頁面額外載入的外部函式庫（例如榜單頁的 Chart.js）；放在 script.js 前面，defer 會照順序執行 -->
+  {% block extra_head %}{% endblock %}
   <script src="{% static 'js/script.js' %}" defer></script>
+  <!-- Week10 操作紀錄員：必須在 script.js 之後載入 -->
+  <script src="{% static 'js/tracker.js' %}" defer></script>
+  <!-- Week11 意見回饋表單 -->
+  <script src="{% static 'js/feedback.js' %}" defer></script>
 </head>
 <!-- data-auth：給 script.js 判斷目前是否登入（1 = 已登入、0 = 訪客） -->
 <body data-auth="{% if user.is_authenticated %}1{% else %}0{% endif %}">
@@ -86,6 +92,9 @@
     {% block content %}{% endblock %}
   </main>
 
+  <!-- ===== 意見回饋（Week11）：只有首頁放，由 index.html 填入下面這個 feedback 區塊 ===== -->
+  {% block feedback %}{% endblock %}
+
   <!-- ===== 頁尾 ===== -->
   <footer class="site-footer">
     <div class="container footer-inner">
@@ -127,6 +136,8 @@
       <a class="btn btn-line" href="#" aria-disabled="true">{% include "partials/icon.html" with name="chat" %}開啟 LINE 加入好友</a>
     </div>
   </dialog>
+
+  {% include "partials/tracker_bar.html" %}
 
   <div class="toast" role="status" aria-live="polite" hidden></div>
 </body>

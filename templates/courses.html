@@ -60,5 +60,17 @@
       <p class="empty" data-filter-empty hidden>找不到符合條件的方案，請調整篩選條件。</p>
     </div>
   </div>
+
+  <!-- Week 10 表單驗證練習：只檢查格式，不寄信、不儲存。form_invalid／form_validated 由 tracker.js 自動記錄（只記欄位與原因） -->
+  <section class="box demo-form-box">
+    <h2 class="bar-title">課程資料索取：驗證練習</h2>
+    <p class="muted">這是操作紀錄的教學練習，只檢查 Email 格式，不會寄信，也不會儲存輸入內容。請使用測試地址 student@example.com。</p>
+    <form id="inquiryDemoForm" class="demo-form">
+      <label for="demoEmail">Email</label>
+      <input id="demoEmail" name="demoEmail" type="email" required placeholder="student@example.com">
+      <button class="btn btn-primary btn-sm" type="submit">驗證資料</button>
+    </form>
+    <p class="demo-form-status" id="demoFormStatus" role="status"></p>
+  </section>
 </div>
 {% endblock %}
