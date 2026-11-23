@@ -1,18 +1,18 @@
 <!--
-  操作紀錄測試工具列（Week10 偵測＋Week11 上傳）：開始／停止／查看／匯出／清除
+  操作紀錄測試工具列（Week10 偵測＋Week11 上傳）：打開網頁就自動記錄；可停止／繼續／查看／匯出／清除
   只有做行為測試時才需要；正式上線可以把 base.html 裡的 include 與 tracker.js 拿掉。
 -->
-<details id="trackerBar" class="tracker-bar" data-state="off">
-  <summary>操作紀錄：<b data-tracker-status>未記錄</b>（<span data-tracker-count>0</span> 筆）</summary>
+<details id="trackerBar" class="tracker-bar" data-state="on">
+  <summary>操作紀錄：<b data-tracker-status>記錄中</b>（<span data-tracker-count>0</span> 筆）</summary>
   <div class="tracker-actions">
-    <button type="button" class="btn btn-primary btn-sm" data-tracker-action="start">開始測試</button>
+    <button type="button" class="btn btn-primary btn-sm" data-tracker-action="start">繼續記錄</button>
     <button type="button" class="btn btn-outline btn-sm" data-tracker-action="stop">停止紀錄</button>
     <button type="button" class="btn btn-outline btn-sm" data-tracker-action="view">查看紀錄</button>
     <button type="button" class="btn btn-outline btn-sm" data-tracker-action="export">匯出 JSON</button>
     <button type="button" class="btn btn-outline btn-sm" data-tracker-action="reset">清除紀錄</button>
   </div>
   <p class="tracker-note" data-tracker-upload>本頁上傳：成功 0／失敗 0</p>
-  <p class="tracker-note">開始測試後，每一筆操作會送到後端（/api/events/）存進資料庫；不記錄搜尋文字與表單內容。</p>
+  <p class="tracker-note">打開網頁就會自動記錄，每一筆操作會送到後端（/api/events/）存進資料庫；不記錄搜尋文字與表單內容。按「停止紀錄」後這個分頁就不再記錄。</p>
   <!-- 讓 Django 在每一頁都設定 csrftoken cookie，tracker.js 與 feedback.js 送 POST 時需要 -->
   {% csrf_token %}
 </details>

@@ -12,9 +12,9 @@
 //   data        補充資料        例：{ result_count: 3 }
 //
 // 規則（保護使用者）：
-//   1. 預設「停用」，按了「開始測試」才會記。
+//   1. 預設「啟用」，打開網頁就自動記錄；按「停止紀錄」後，這個分頁就不再記（關掉分頁再開會恢復）。
 //   2. 只存白名單欄位；不存搜尋原文、Email、電話、密碼。
-//   3. 存在 sessionStorage（同一個分頁），關掉分頁就消失；此階段不上傳。
+//   3. 存在 sessionStorage（同一個分頁），關掉分頁就消失；Week11 起每筆也會送到後端 /api/events/。
 //   4. 任何錯誤都不能影響網站原本的功能。
 // =========================================================
 (function () {
@@ -137,8 +137,9 @@
   }
 
   // ---------- 控制 ----------
+  // 預設啟用：只有使用者在這個分頁按過「停止紀錄」（存成 false）才算停用
   function isEnabled() {
-    return readStore(KEY_ENABLED, false) === true;
+    return readStore(KEY_ENABLED, true) !== false;
   }
 
   function start() {
@@ -396,7 +397,7 @@
   // 公開給 Console 與其他程式使用
   window.UITracker = { start, stop, isEnabled, track, read, reset, exportJSON };
 
-  // 頁面載入：若上一頁已經在記錄，這一頁要記「進入」並繼續計時
+  // 頁面載入：預設就會記錄，這一頁要記「進入」並開始計時（按過停止的分頁除外）
   function init() {
     bindBar();
     if (isEnabled()) {
