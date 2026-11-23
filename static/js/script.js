@@ -121,6 +121,7 @@ document.querySelectorAll("[data-filter-scope]").forEach(scope => {
       uniqueEl.textContent = new Set(visible.map(item => item.dataset[key])).size;
     }
     if (emptyEl) emptyEl.hidden = items.length === 0 || visible.length > 0;
+    scope.dispatchEvent(new CustomEvent("filter:updated"));   // 通知榜單圖表重畫
   }
 
   if (keywordInput) keywordInput.addEventListener("input", applyFilter);
@@ -304,3 +305,73 @@ document.querySelectorAll("[data-share]").forEach(button => {
     }
   });
 });
+
+// ---------- Week 10：榜單圖表（各年度錄取人次，跟著篩選結果變化） ----------
+// Chart.js 由 rankings.html 的 extra_head 從 CDN 載入；載入失敗就把圖表區藏起來，不影響其他功能
+const rankChartBox = document.querySelector("[data-rank-chart]");
+if (rankChartBox) {
+  const scope = rankChartBox.closest("[data-filter-scope]");
+  const chartType = document.querySelector("#rankChartType");
+  const canvas = document.querySelector("#rankChart");
+  let rankChart = null;
+
+  function drawRankChart() {
+    if (typeof Chart === "undefined") {
+      rankChartBox.hidden = true;
+      return;
+    }
+    const counts = {};
+    scope.querySelectorAll(".filter-item:not([hidden])").forEach(row => {
+      counts[row.dataset.year] = (counts[row.dataset.year] || 0) + 1;
+    });
+    const years = Object.keys(counts).sort();
+    if (rankChart) rankChart.destroy();
+    rankChart = new Chart(canvas, {
+      type: chartType.value,
+      data: {
+        labels: years.map(year => `${year} 年度`),
+        datasets: [{
+          label: "錄取人次",
+          data: years.map(year => counts[year]),
+          backgroundColor: "#ef8636",
+          borderColor: "#2c3f94",
+          tension: 0.2,
+        }],
+      },
+      options: {
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+      },
+    });
+  }
+
+  scope.addEventListener("filter:updated", drawRankChart);
+  chartType.addEventListener("change", () => {
+    drawRankChart();
+    // 圖表形式不是 data-filter 篩選，tracker.js 不會自動記，這裡手動記一筆
+    if (window.UITracker) {
+      UITracker.track("filter_change", "rank_chart_type", { filter_name: "chart_type", selected_value: chartType.value });
+    }
+  });
+  drawRankChart();
+}
+
+// ---------- Week 10：表單驗證練習（只顯示結果，不保存輸入內容，也不真的送出） ----------
+// form_invalid／form_validated 由 tracker.js 自動記錄，這裡只負責畫面提示
+const demoForm = document.querySelector("#inquiryDemoForm");
+if (demoForm) {
+  const demoStatus = document.querySelector("#demoFormStatus");
+
+  // invalid 事件不會往上傳遞，要用捕獲階段（第三個參數 true）才收得到
+  demoForm.addEventListener("invalid", event => {
+    demoStatus.textContent = event.target.validity.valueMissing
+      ? "請先填寫 Email。"
+      : "Email 格式不正確，請再檢查一次。";
+  }, true);
+
+  demoForm.addEventListener("submit", event => {
+    event.preventDefault();
+    demoStatus.textContent = "格式正確，已通過前端驗證（本練習不會寄信或儲存）。";
+  });
+}

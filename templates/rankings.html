@@ -2,6 +2,8 @@
 
 {% block title %}榜單榮譽{% endblock %}
 
+{% block extra_head %}<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.js" defer></script>{% endblock %}
+
 {% block content %}
 <div class="container page">
   <nav class="breadcrumb" aria-label="麵包屑">
@@ -30,6 +32,20 @@
       </select>
       <button class="btn btn-outline btn-sm" type="button" data-filter-reset>清除條件</button>
     </form>
+
+    <!-- Week 10：各年度錄取人次圖表，跟著上方篩選更新（script.js 的「榜單圖表」） -->
+    <section class="box chart-box" data-rank-chart>
+      <div class="chart-head">
+        <h2 class="bar-title">各年度錄取人次</h2>
+        <label>圖表形式
+          <select id="rankChartType">
+            <option value="bar">長條圖</option>
+            <option value="line">折線圖</option>
+          </select>
+        </label>
+      </div>
+      <div class="chart-canvas"><canvas id="rankChart" role="img" aria-label="各年度錄取人次圖表"></canvas></div>
+    </section>
 
     <div class="table-wrap">
       <table class="data-table">
